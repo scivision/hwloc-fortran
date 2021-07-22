@@ -1,0 +1,87 @@
+name: ci
+
+env:
+  CTEST_PARALLEL_LEVEL: 3
+
+on:
+  push:
+    paths:
+      - "**/CMakeLists.txt"
+      - "**.cmake"
+      - "**.c"
+      - "**.f90"
+      - ".github/workflows/ci.yml"
+  release:
+    types: [published]
+
+
+jobs:
+
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: install hdf5
+      run: |
+        sudo apt update -yq
+        sudo apt install -yq --no-install-recommends gfortran libhwloc-dev
+
+    - run: cmake --preset default
+    - run: cmake --build --preset default
+    - run: ctest --preset default --output-junit test-results.xml
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1
+      if: always()
+      with:
+        files: build/test-results.xml
+
+
+  mac:
+    needs: linux
+    runs-on: macos-latest
+    timeout-minutes: 15
+    env:
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+      FC: gfortran-11
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - run: brew install hwloc
+
+    - run: cmake --preset default
+    - run: cmake --build --preset default
+    - run: ctest --preset default --output-junit test-results.xml
+
+
+  msys2:
+    needs: linux
+    timeout-minutes: 15
+    runs-on: windows-latest
+    env:
+      CMAKE_GENERATOR: Ninja
+
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          git
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
+          mingw-w64-x86_64-gcc-fortran
+          mingw-w64-x86_64-hwloc
+    # cmake install needed because of default to msys2 shell
+
+    - uses: actions/checkout@v2
+
+    - run: cmake --preset default
+    - run: cmake --build --preset default
+    - run: ctest --preset default --output-junit test-results.xml
