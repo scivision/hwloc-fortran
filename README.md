@@ -1,5 +1,7 @@
 # HWLOC Fortran
 
+[![ci](https://github.com/scivision/hwloc-fortran/actions/workflows/ci.yml/badge.svg)](https://github.com/scivision/hwloc-fortran/actions/workflows/ci.yml)
+
 Simple Fortran binding for
 [HWLOC](https://www.open-mpi.org/projects/hwloc/)
 to get CPU count, with fallback to alternative methods.

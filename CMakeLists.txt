@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.14...3.21)
 
+file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION PROJECT_VERSION
+  REGEX "^([0-9]+\.[0-9]+\.[0-9]+)" LIMIT_INPUT 16 LENGTH_MAXIMUM 16 LIMIT_COUNT 1)
+
 project(HWLOC-Fortran
   LANGUAGES C Fortran
   HOMEPAGE_URL https://github.com/scivision/hwloc-fortran
