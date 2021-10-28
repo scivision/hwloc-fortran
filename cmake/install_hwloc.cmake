@@ -3,13 +3,13 @@
 # cmake -P install_hwloc.cmake
 # will install hwloc under the user's home directory.
 
-cmake_minimum_required(VERSION 3.20...3.21)
+cmake_minimum_required(VERSION 3.20...3.22)
 
 set(CMAKE_TLS_VERIFY true)
 
 set(prefix "~")
 
-set(version 2.5.0)
+set(version 2.6.0rc2)
 
 string(SUBSTRING ${version} 0 3 subver)
 
@@ -17,9 +17,9 @@ set(host https://download.open-mpi.org/release/hwloc/v${subver}/)
 
 if(APPLE)
   find_program(brew
-    NAMES brew
-    PATHS /usr/local /opt/homeebrew
-    PATH_SUFFIXES bin)
+  NAMES brew
+  PATHS/opt/homebrew /usr/local
+  )
 
   if(brew)
     execute_process(COMMAND ${brew} install hwloc
@@ -32,14 +32,14 @@ if(WIN32)
   set(arch $ENV{PROCESSOR_ARCHITECTURE})
   if(arch STREQUAL AMD64)
     set(stem hwloc-win64-build-${version})
-    set(sha256 b64f5ebe534d1ad57cdd4b18ab4035389b68802a97464c1295005043075309ea)
+    set(sha256 cac82da11c5578c4b5255e9eb86766789ba2b672e26ac1f94ae2273ec6dfce3f)
     set(name ${stem}.zip)
   else()
     message(FATAL_ERROR "HWloc binaries provided for x86_64 only. May need to build HWloc from source.")
   endif()
 else()
   set(stem hwloc-${version})
-  set(sha256 a9cf9088be085bdd167c78b73ddf94d968fa73a8ccf62172481ba9342c4f52c8)
+  set(sha256 c4926a60eca045cdc3f082c60b1684bcca1327e29c330283c3609d9716db4811)
   set(name ${stem}.tar.bz2)
 endif()
 
@@ -56,29 +56,24 @@ message(STATUS "installing hwloc ${version} to ${path}")
 
 set(archive ${path}/${name})
 
-if(EXISTS ${archive})
-  file(SIZE ${archive} fsize)
-  if(fsize LESS 100000)
-    file(REMOVE ${archive})
-  endif()
-endif()
-
 if(NOT EXISTS ${archive})
   message(STATUS "download ${url}")
   file(DOWNLOAD ${url} ${archive}
-    INACTIVITY_TIMEOUT 15
-    EXPECTED_HASH SHA256=${sha256})
+  INACTIVITY_TIMEOUT 15
+  EXPECTED_HASH SHA256=${sha256}
+  )
 endif()
 
 
 function(check_hwloc)
 
 find_program(lstopo
-  NAMES lstopo
-  PATHS ${path}
-  PATH_SUFFIXES bin
-  NO_DEFAULT_PATH
-  REQUIRED)
+NAMES lstopo
+PATHS ${path}
+PATH_SUFFIXES bin
+NO_DEFAULT_PATH
+REQUIRED
+)
 
 
 cmake_path(GET lstopo PARENT_PATH pathbin)
@@ -90,8 +85,10 @@ endfunction(check_hwloc)
 
 if(WIN32)
   message(STATUS "${archive} => ${path}")
-  file(ARCHIVE_EXTRACT INPUT ${archive}
-    DESTINATION ${prefix})
+  file(ARCHIVE_EXTRACT
+  INPUT ${archive}
+  DESTINATION ${prefix}
+  )
 
   check_hwloc()
   return()
