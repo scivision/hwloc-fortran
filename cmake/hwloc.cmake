@@ -56,5 +56,8 @@ target_link_libraries(HWLOC::HWLOC INTERFACE "${HWLOC_LIBRARIES}")
 if(APPLE)
   target_link_libraries(HWLOC::HWLOC INTERFACE "-framework Foundation" "-framework IOKit" "-framework OpenCL")
 endif()
+if(LibXml2_FOUND)
+  target_link_libraries(HWLOC::HWLOC INTERFACE LibXml2::LibXml2)
+endif()
 
 add_dependencies(HWLOC::HWLOC HWLOC)
