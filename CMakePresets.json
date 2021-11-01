@@ -9,6 +9,14 @@
   "generator": "Ninja Multi-Config"
 },
 {
+  "name": "build",
+  "displayName": "build all libraries",
+  "description": "Build all external libraries without searching for existing libraries.",
+  "cacheVariables": {
+    "hwloc_external": "on"
+  }
+},
+{
   "name": "phony"
 }
 ],
@@ -17,6 +25,11 @@
     "name": "release",
     "configurePreset": "multi",
     "configuration": "Release"
+  },
+  {
+    "name": "reldebug",
+    "configurePreset": "multi",
+    "configuration": "RelWithDebInfo"
   },
   {
     "name": "debug",
@@ -41,6 +54,11 @@
   "name": "release", "inherits": "default",
   "configurePreset": "multi",
   "configuration": "Release"
+},
+{
+  "name": "reldebug", "inherits": "default",
+  "configurePreset": "multi",
+  "configuration": "RelWithDebInfo"
 },
 {
   "name": "debug", "inherits": "default",
