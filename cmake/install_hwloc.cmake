@@ -9,11 +9,17 @@ set(CMAKE_TLS_VERIFY true)
 
 set(prefix "~")
 
-set(version 2.6.0rc2)
+if(NOT HWLOC_VERSION)
+  set(HWLOC_VERSION 2.6.0)
+endif()
 
-string(SUBSTRING ${version} 0 3 subver)
-
-set(host https://download.open-mpi.org/release/hwloc/v${subver}/)
+file(READ ${CMAKE_CURRENT_LIST_DIR}/libraries.json _libj)
+set(key "source")
+if(WIN32)
+  set(key ${CMAKE_HOST_SYSTEM_NAME})
+endif()
+string(JSON hwloc_url GET ${_libj} hwloc ${HWLOC_VERSION} ${key} url)
+string(JSON hwloc_sha256 GET ${_libj} hwloc ${HWLOC_VERSION} ${key} sha256)
 
 if(APPLE)
   find_program(brew
@@ -30,37 +36,31 @@ endif()
 
 if(WIN32)
   set(arch $ENV{PROCESSOR_ARCHITECTURE})
-  if(arch STREQUAL AMD64)
-    set(stem hwloc-win64-build-${version})
-    set(sha256 cac82da11c5578c4b5255e9eb86766789ba2b672e26ac1f94ae2273ec6dfce3f)
-    set(name ${stem}.zip)
-  else()
+  if(NOT arch STREQUAL AMD64)
     message(FATAL_ERROR "HWloc binaries provided for x86_64 only. May need to build HWloc from source.")
   endif()
-else()
-  set(stem hwloc-${version})
-  set(sha256 c4926a60eca045cdc3f082c60b1684bcca1327e29c330283c3609d9716db4811)
-  set(name ${stem}.tar.bz2)
 endif()
 
-set(url ${host}${name})
+cmake_path(GET hwloc_url FILENAME name)
 
 if(CMAKE_VERSION VERSION_LESS 3.21)
   get_filename_component(prefix ${prefix} ABSOLUTE)
 else()
   file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
 endif()
-set(path ${prefix}/${stem})
 
-message(STATUS "installing hwloc ${version} to ${path}")
+cmake_path(GET hwloc_url STEM LAST_ONLY stem)
+cmake_path(APPEND prefix ${stem} OUTPUT_VARIABLE path)
 
-set(archive ${path}/${name})
+message(STATUS "Installing hwloc ${HWLOC_VERSION} to ${path}")
+
+cmake_path(APPEND path ${name} OUTPUT_VARIABLE archive)
 
 if(NOT EXISTS ${archive})
-  message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive}
+  message(STATUS "download ${hwloc_url}")
+  file(DOWNLOAD ${hwloc_url} ${archive}
   INACTIVITY_TIMEOUT 15
-  EXPECTED_HASH SHA256=${sha256}
+  EXPECTED_HASH SHA256=${hwloc_sha256}
   )
 endif()
 
@@ -74,7 +74,6 @@ PATH_SUFFIXES bin
 NO_DEFAULT_PATH
 REQUIRED
 )
-
 
 cmake_path(GET lstopo PARENT_PATH pathbin)
 message(STATUS "add to environment variable PATH ${pathbin}")
@@ -110,22 +109,27 @@ else()
   set(tmpdir ${prefix}/build)
 endif()
 
-file(ARCHIVE_EXTRACT INPUT ${archive}
-  DESTINATION ${tmpdir})
+file(ARCHIVE_EXTRACT
+INPUT ${archive}
+DESTINATION ${tmpdir}
+)
 
 set(workdir ${tmpdir}/${stem})
 
 message(STATUS "Building HWLOC in ${workdir}")
 if(NOT EXISTS ${workdir}/Makefile)
   execute_process(COMMAND ./configure --prefix=${path}
-    WORKING_DIRECTORY ${workdir}
-    COMMAND_ERROR_IS_FATAL ANY)
+  WORKING_DIRECTORY ${workdir}
+  COMMAND_ERROR_IS_FATAL ANY
+  )
 endif()
 execute_process(COMMAND ${MAKE_COMMAND} -j
-  WORKING_DIRECTORY ${workdir}
-  COMMAND_ERROR_IS_FATAL ANY)
+WORKING_DIRECTORY ${workdir}
+COMMAND_ERROR_IS_FATAL ANY
+)
 execute_process(COMMAND ${MAKE_COMMAND} install
-  WORKING_DIRECTORY ${workdir}
-  COMMAND_ERROR_IS_FATAL ANY)
+WORKING_DIRECTORY ${workdir}
+COMMAND_ERROR_IS_FATAL ANY
+)
 
 check_hwloc()
