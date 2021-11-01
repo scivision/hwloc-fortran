@@ -21,30 +21,48 @@ endif()
 set(HWLOC_INCLUDE_DIRS ${HWLOC_ROOT}/include)
 
 
-find_package(Autotools REQUIRED)
-
-find_package(LibXml2)
-if(NOT LibXml2_FOUND)
-  list(APPEND hwloc_args --disable-libxml2)
-endif()
-
 # --- read JSON meta
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/libraries.json _libj)
-string(JSON hwloc_url GET ${_libj} hwloc ${HWLOC_VERSION} url)
-string(JSON hwloc_sha256 GET ${_libj} hwloc ${HWLOC_VERSION} sha256)
+if(WIN32)
+  set(key windows)
+else()
+  set(key source)
+endif()
+string(JSON hwloc_url GET ${_libj} hwloc ${HWLOC_VERSION} ${key} url)
+string(JSON hwloc_sha256 GET ${_libj} hwloc ${HWLOC_VERSION} ${key} sha256)
 
-ExternalProject_Add(HWLOC
-URL ${hwloc_url}
-URL_HASH SHA256=${hwloc_sha256}
-BUILD_BYPRODUCTS ${HWLOC_LIBRARIES}
-CONFIGURE_HANDLED_BY_BUILD ON
-INACTIVITY_TIMEOUT 15
-CONFIGURE_COMMAND ${PROJECT_BINARY_DIR}/HWLOC-prefix/src/HWLOC/configure --prefix=${HWLOC_ROOT} ${hwloc_args}
-BUILD_COMMAND ${MAKE_EXECUTABLE} -j
-INSTALL_COMMAND ${MAKE_EXECUTABLE} install
-TEST_COMMAND ""
-)
+if(WIN32)
+  ExternalProject_Add(HWLOC
+  URL ${hwloc_url}
+  URL_HASH SHA256=${hwloc_sha256}
+  BUILD_BYPRODUCTS ${HWLOC_LIBRARIES}
+  INACTIVITY_TIMEOUT 15
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_BINARY_DIR}/HWLOC-prefix/src/HWLOC/ ${PROJECT_BINARY_DIR}/
+  TEST_COMMAND ""
+  )
+else()
+  find_package(Autotools REQUIRED)
+
+  find_package(LibXml2)
+  if(NOT LibXml2_FOUND)
+    list(APPEND hwloc_args --disable-libxml2)
+  endif()
+
+  ExternalProject_Add(HWLOC
+  URL ${hwloc_url}
+  URL_HASH SHA256=${hwloc_sha256}
+  BUILD_BYPRODUCTS ${HWLOC_LIBRARIES}
+  CONFIGURE_HANDLED_BY_BUILD ON
+  INACTIVITY_TIMEOUT 15
+  CONFIGURE_COMMAND ${PROJECT_BINARY_DIR}/HWLOC-prefix/src/HWLOC/configure --prefix=${HWLOC_ROOT} ${hwloc_args}
+  BUILD_COMMAND ${MAKE_EXECUTABLE} -j
+  INSTALL_COMMAND ${MAKE_EXECUTABLE} install
+  TEST_COMMAND ""
+  )
+endif()
 
 file(MAKE_DIRECTORY ${HWLOC_INCLUDE_DIRS})
 # avoid race condition
