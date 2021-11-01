@@ -38,7 +38,11 @@ else()
   file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
 endif()
 
-cmake_path(GET hwloc_url STEM LAST_ONLY stem)
+if(WIN32)
+  cmake_path(GET hwloc_url STEM LAST_ONLY stem)
+else()
+  set(stem hwloc-${HWLOC_VERSION})
+endif()
 cmake_path(APPEND prefix ${stem} OUTPUT_VARIABLE path)
 
 message(STATUS "Installing hwloc ${HWLOC_VERSION} to ${path}")
