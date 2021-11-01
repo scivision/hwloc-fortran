@@ -23,6 +23,11 @@ set(HWLOC_INCLUDE_DIRS ${HWLOC_ROOT}/include)
 
 find_package(Autotools REQUIRED)
 
+find_package(LibXml2)
+if(NOT LibXml2_FOUND)
+  list(APPEND hwloc_args --disable-libxml2)
+endif()
+
 # --- read JSON meta
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/libraries.json _libj)
@@ -48,5 +53,8 @@ file(MAKE_DIRECTORY ${HWLOC_INCLUDE_DIRS})
 add_library(HWLOC::HWLOC INTERFACE IMPORTED GLOBAL)
 target_include_directories(HWLOC::HWLOC INTERFACE "${HWLOC_INCLUDE_DIRS}")
 target_link_libraries(HWLOC::HWLOC INTERFACE "${HWLOC_LIBRARIES}")
+if(APPLE)
+  target_link_libraries(HWLOC::HWLOC INTERFACE "-framework Foundation" "-framework IOKit" "-framework OpenCL")
+endif()
 
 add_dependencies(HWLOC::HWLOC HWLOC)
