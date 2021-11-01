@@ -50,7 +50,7 @@ jobs:
 
     - run: cmake -B build
     - run: cmake --build build
-    - run: ctest --test-dir build --preset default
+    - run: ctest --test-dir build -V
 
 
   mac:
@@ -68,7 +68,7 @@ jobs:
 
     - run: cmake -B build
     - run: cmake --build build
-    - run: ctest --test-dir build
+    - run: ctest --test-dir build -V
 
 
   mac-build:
@@ -86,7 +86,7 @@ jobs:
 
     - run: cmake -B build
     - run: cmake --build build
-    - run: ctest --test-dir build
+    - run: ctest --test-dir build -V
 
   msys2:
     needs: linux
@@ -114,4 +114,32 @@ jobs:
 
     - run: cmake -B build
     - run: cmake --build build
-    - run: ctest --test-dir build --output-junit test-results.xml
+    - run: ctest --test-dir build -V
+
+
+  msys2-build:
+    needs: msys2
+    timeout-minutes: 15
+    runs-on: windows-latest
+    env:
+      CMAKE_GENERATOR: Ninja
+
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          git
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
+          mingw-w64-x86_64-gcc-fortran
+    # cmake install needed because of default to msys2 shell
+
+    - uses: actions/checkout@v2
+
+    - run: cmake -B build
+    - run: cmake --build build
+    - run: ctest --test-dir build -V
