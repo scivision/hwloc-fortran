@@ -13,6 +13,8 @@ if(NOT HWLOC_VERSION)
   set(HWLOC_VERSION 2.6.0)
 endif()
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/Modules)
+
 file(READ ${CMAKE_CURRENT_LIST_DIR}/libraries.json _libj)
 set(key "source")
 if(WIN32)
@@ -20,19 +22,6 @@ if(WIN32)
 endif()
 string(JSON hwloc_url GET ${_libj} hwloc ${HWLOC_VERSION} ${key} url)
 string(JSON hwloc_sha256 GET ${_libj} hwloc ${HWLOC_VERSION} ${key} sha256)
-
-if(APPLE)
-  find_program(brew
-  NAMES brew
-  PATHS/opt/homebrew /usr/local
-  )
-
-  if(brew)
-    execute_process(COMMAND ${brew} install hwloc
-      COMMAND_ERROR_IS_FATAL ANY)
-    return()
-  endif()
-endif()
 
 if(WIN32)
   set(arch $ENV{PROCESSOR_ARCHITECTURE})
@@ -95,7 +84,7 @@ endif()
 
 # --- Non-Windows only
 
-find_program(MAKE_COMMAND NAMES make REQUIRED)
+find_package(Autotools REQUIRED)
 
 # find tempdir, as cannot extract and install to same directory
 # https://systemd.io/TEMPORARY_DIRECTORIES/
@@ -123,11 +112,11 @@ if(NOT EXISTS ${workdir}/Makefile)
   COMMAND_ERROR_IS_FATAL ANY
   )
 endif()
-execute_process(COMMAND ${MAKE_COMMAND} -j
+execute_process(COMMAND ${MAKE_EXECUTABLE} -j
 WORKING_DIRECTORY ${workdir}
 COMMAND_ERROR_IS_FATAL ANY
 )
-execute_process(COMMAND ${MAKE_COMMAND} install
+execute_process(COMMAND ${MAKE_EXECUTABLE} install
 WORKING_DIRECTORY ${workdir}
 COMMAND_ERROR_IS_FATAL ANY
 )
