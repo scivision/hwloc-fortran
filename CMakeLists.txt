@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.19...3.22)
 file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION PROJECT_VERSION
   REGEX "^([0-9]+\.[0-9]+\.[0-9]+)" LIMIT_INPUT 16 LENGTH_MAXIMUM 16 LIMIT_COUNT 1)
 
-project(HWLOC-Fortran
+project(HWLOCfortran
 LANGUAGES C Fortran
 HOMEPAGE_URL https://github.com/scivision/hwloc-fortran
 VERSION ${PROJECT_VERSION}
@@ -17,25 +17,26 @@ set_directory_properties(PROPERTIES EP_UPDATE_DISCONNECTED true)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR} CACHE PATH "install dir" FORCE)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH "install dir" FORCE)
 endif()
 
 # separate C object lib to avoid compiler warnings from C <-> Fortran add_compile_options etc.
 add_library(hwloc_c OBJECT get_cpu_hwloc.c)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/get_cpu_hwloc.h TYPE INCLUDE)
-install(TARGETS hwloc_c EXPORT ${PROJECT_NAME}Targets)
+install(TARGETS hwloc_c EXPORT ${PROJECT_NAME}-targets)
 
 # not OBJECT to avoid link issues
 add_library(hwloc_ifc hwloc_ifc.f90)
 target_link_libraries(hwloc_ifc PRIVATE hwloc_c)
 set_target_properties(hwloc_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(hwloc_ifc INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+$<INSTALL_INTERFACE:include>
+)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/hwloc_ifc.mod TYPE INCLUDE)
-install(TARGETS hwloc_ifc EXPORT ${PROJECT_NAME}Targets)
+install(TARGETS hwloc_ifc EXPORT ${PROJECT_NAME}-targets)
 
 if(NOT hwloc_external)
   find_package(HWLOC)
@@ -62,7 +63,8 @@ if(BUILD_TESTING)
 endif()
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/FindHWLOC.cmake
-  DESTINATION lib/cmake/Modules)
+DESTINATION cmake
+)
 
 
 include(cmake/install.cmake)
