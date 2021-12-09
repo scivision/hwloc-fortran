@@ -3,7 +3,11 @@ include(ExternalProject)
 set(hwloc_external true CACHE BOOL "autobuild HWLOC")
 
 if(NOT HWLOC_VERSION)
-  set(HWLOC_VERSION 2.6.0)
+  if(WIN32)
+    set(HWLOC_VERSION 2.7.0)
+  else()
+    set(HWLOC_VERSION 2.6.0)
+  endif()
 endif()
 
 # need to be sure _ROOT isn't empty, DEFINED is not enough
@@ -36,12 +40,10 @@ if(WIN32)
   ExternalProject_Add(HWLOC
   URL ${hwloc_url}
   URL_HASH SHA256=${hwloc_sha256}
+  SOURCE_SUBDIR contrib/windows-cmake
+  CMAKE_ARGS --install-prefix=${HWLOC_ROOT} -DCMAKE_BUILD_TYPE=Release -DHWLOC_ENABLE_TESTING:BOOL=off
   BUILD_BYPRODUCTS ${HWLOC_LIBRARIES}
   INACTIVITY_TIMEOUT 15
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_BINARY_DIR}/HWLOC-prefix/src/HWLOC/ ${PROJECT_BINARY_DIR}/
-  TEST_COMMAND ""
   )
 else()
   find_package(Autotools REQUIRED)
