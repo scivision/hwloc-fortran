@@ -39,7 +39,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/hwloc_ifc.mod TYPE INCLUDE)
 install(TARGETS hwloc_ifc EXPORT ${PROJECT_NAME}-targets)
 
 if(NOT hwloc_external)
-  find_package(HWLOC)
+  find_package(HWLOC 2.4.1...4)
 endif()
 
 if(NOT HWLOC_FOUND)
