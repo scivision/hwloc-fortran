@@ -25,11 +25,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: install prerequisites
-      run: |
-        sudo apt update -yq
-        sudo apt install -yq --no-install-recommends libhwloc-dev
-
     - run: cmake -B build
     - run: cmake --build build
     - run: ctest --test-dir build --preset default --output-junit test-results.xml

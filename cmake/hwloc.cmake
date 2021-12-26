@@ -2,7 +2,7 @@ include(ExternalProject)
 
 set(hwloc_external true CACHE BOOL "autobuild HWLOC")
 
-if(NOT HWLOC_VERSION)
+if(HWLOC_VERSION VERSION_LESS 2.6)
   set(HWLOC_VERSION 2.7.0)
 endif()
 
