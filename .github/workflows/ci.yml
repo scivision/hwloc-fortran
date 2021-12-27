@@ -35,18 +35,6 @@ jobs:
       with:
         files: build/test-results.xml
 
-  linux-build:
-    needs: linux
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - run: cmake -B build
-    - run: cmake --build build
-    - run: ctest --test-dir build -V
-
 
   mac:
     needs: linux
@@ -77,7 +65,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: brew install autoconf automake libtool
+    - run: brew install make
 
     - run: cmake -B build
     - run: cmake --build build
