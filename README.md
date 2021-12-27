@@ -13,7 +13,7 @@ This can be useful for managing MPI runs or estimating memory requirements.
 
 The HWLOC library is automatically built if not present.
 HWLOC for Windows builds with CMake.
-At present, HWLOC for Unix-like platforms builds with Autotools, called by CMake.
+At present, HWLOC for Unix-like platforms builds with GNU Make called by CMake.
 
 ## build
 
