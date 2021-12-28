@@ -18,6 +18,9 @@ else()
   set(HWLOC_LIBRARIES ${HWLOC_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}hwloc${CMAKE_STATIC_LIBRARY_SUFFIX})
   set(hwloc_args --disable-shared --enable-static)
 endif()
+
+list(APPEND hwloc_args --disable-opencl --disable-cuda)
+
 set(HWLOC_INCLUDE_DIRS ${HWLOC_ROOT}/include)
 
 
