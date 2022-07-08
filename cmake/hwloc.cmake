@@ -2,8 +2,8 @@ include(ExternalProject)
 
 set(hwloc_external true CACHE BOOL "autobuild HWLOC")
 
-if(HWLOC_VERSION VERSION_LESS 2.6)
-  set(HWLOC_VERSION 2.7.0)
+if(NOT hwloc_tag)
+  set(hwloc_tag hwloc-2.8.0)
 endif()
 
 # need to be sure _ROOT isn't empty, DEFINED is not enough
@@ -28,16 +28,22 @@ set(HWLOC_INCLUDE_DIRS ${HWLOC_ROOT}/include)
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/libraries.json _libj)
 string(JSON hwloc_url GET ${_libj} hwloc ${HWLOC_VERSION} url)
-string(JSON hwloc_sha256 GET ${_libj} hwloc ${HWLOC_VERSION} sha256)
+
+set(hwloc_cmake_args
+--install-prefix=${HWLOC_ROOT}
+-DCMAKE_BUILD_TYPE=Release
+-DHWLOC_ENABLE_TESTING:BOOL=off
+)
 
 if(WIN32)
   ExternalProject_Add(HWLOC
-  URL ${hwloc_url}
-  URL_HASH SHA256=${hwloc_sha256}
+  GIT_REPOSITORY ${hwloc_url}
+  GIT_TAG ${hwloc_tag}
+  GIT_SHALLOW true
   SOURCE_SUBDIR contrib/windows-cmake
-  CMAKE_ARGS --install-prefix=${HWLOC_ROOT} -DCMAKE_BUILD_TYPE=Release -DHWLOC_ENABLE_TESTING:BOOL=off
+  CMAKE_ARGS ${hwloc_cmake_args}
   BUILD_BYPRODUCTS ${HWLOC_LIBRARIES}
-  INACTIVITY_TIMEOUT 15
+  INACTIVITY_TIMEOUT 60
   )
 else()
   find_program(MAKE_EXECUTABLE
@@ -52,12 +58,13 @@ else()
   endif()
 
   ExternalProject_Add(HWLOC
-  URL ${hwloc_url}
-  URL_HASH SHA256=${hwloc_sha256}
+  GIT_REPOSITORY ${hwloc_url}
+  GIT_TAG ${hwloc_tag}
+  GIT_SHALLOW true
   BUILD_BYPRODUCTS ${HWLOC_LIBRARIES}
   CONFIGURE_HANDLED_BY_BUILD ON
   INACTIVITY_TIMEOUT 15
-  CONFIGURE_COMMAND ${PROJECT_BINARY_DIR}/HWLOC-prefix/src/HWLOC/configure --prefix=${HWLOC_ROOT} ${hwloc_args}
+  CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${HWLOC_ROOT} ${hwloc_args}
   BUILD_COMMAND ${MAKE_EXECUTABLE} -j
   INSTALL_COMMAND ${MAKE_EXECUTABLE} install
   TEST_COMMAND ""

@@ -1,12 +1,5 @@
 {
   "hwloc": {
-    "2.7.0": {
-      "url": "https://download.open-mpi.org/release/hwloc/v2.7/hwloc-2.7.0.tar.bz2",
-      "sha256": "028cee53ebcfe048283a2b3e87f2fa742c83645fc3ae329134bf5bb8b90384e0"
-    },
-    "2.6.0": {
-      "url": "https://download.open-mpi.org/release/hwloc/v2.6/hwloc-2.6.0.tar.bz2",
-      "sha256": "e1f073e44e28c296ff848dead5e9bd6e2426b77f95ead1792358958e859fa83a"
-    }
+    "url": "https://github.com/open-mpi/hwloc.git"
   }
 }
